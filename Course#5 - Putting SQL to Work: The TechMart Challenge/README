@@ -1,0 +1,16 @@
+###################################################
+###################################################
+
+The first time through the lab, I chose to use the 
+database tables in their existing format and modify
+the data types using Pandas.
+
+This version is called PANDAS_clean. After cleaning
+in Pandas, some graphs are made using Matplotlib.
+
+The FINAL version of the lab reformats the data 
+types using SQL, allowing for more overall use of
+SQL in the project.
+
+###################################################
+###################################################
