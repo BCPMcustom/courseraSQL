@@ -8,9 +8,14 @@ the data types using Pandas.
 This version is called PANDAS_clean. After cleaning
 in Pandas, some graphs are made using Matplotlib.
 
-The FINAL version of the lab reformats the data 
+The SQL_clean version of the lab reformats the data 
 types using SQL, allowing for more overall use of
 SQL in the project.
+
+The FINAL verison of the lab encorporates all of 
+the best lessons from the first two runs through 
+the lab, this time focusing on a written data 
+analysis for the purpose of course final testing.
 
 ###################################################
 ###################################################
