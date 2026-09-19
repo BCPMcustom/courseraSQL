@@ -6,8 +6,7 @@ SELECT
         od.priceEach,
         o.orderDate,
         o.requiredDate,
-        o.shippedDate,
-        o.shippedDate - o.orderDate AS daysToShipping
+        o.shippedDate
 FROM mintclassics.orderdetails od
 JOIN mintclassics.orders o ON od.orderNumber = o.orderNumber
 JOIN mintclassics.products p ON p.productCode = od.productCode;
