@@ -6,6 +6,7 @@ SELECT
         p.warehouseCode,
         p.productCode,
         p.productLine,
+        p.productVendor,
         p.buyPrice,
         p.quantityInStock,
         p.buyPrice * p.quantityInStock AS investmentValue
