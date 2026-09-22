@@ -21,4 +21,5 @@ SELECT
         SUM(`totalVolume(cu.ft)`) / (warehousePctCap / 100) AS warehouseCapacity,
         (SUM(`totalVolume(cu.ft)`) / (warehousePctCap / 100)) - SUM(`totalVolume(cu.ft)`) AS spaceRemaining
 FROM volumeinfo
-GROUP BY warehouseCode;
+GROUP BY warehouseCode
+ORDER BY warehouseCode;
