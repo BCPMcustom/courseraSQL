@@ -1,0 +1,139 @@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+||  !!!   FORMAL RULES FOR .ipynb TO .pptx NOTEBOOK SYSTEM   ~~~  ||
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+-> The first Markdown header will be of size # and becomes the Title for Slide_1
+
+-> The Imports section is denoted using a header of size ###
+    -> All sections with headers of size ### are to be ignored by the .pptx pipeline
+
+-> Each header of size ## represents the delimiter between slides
+    -> The text string of size ## becomes the Title for each new slide
+
+-> Headers of size #### shall each recieve their own slide
+    -> If a header of size #### directly follows a header of size ## then use both 
+       the Title(##) and the header(####)
+    -> If there exists a list of headers of size ####, then reuse the Title for each 
+       subsequent slide, appending the string " (cont'd)" to the original Title(##)
+    -> If a header of size #### is used alone then render it as an emphasis block
+
+-> All markdown text should be presented in the form of bullet points
+    -> These bulleted strings become the PowerPoint bullet points
+
+-> Render any Dataframe outputs into .png files using PrettyTable if possible
+
+-> Import all embedded/output picture files which follow the [# Title] onto their slide
+    -> The first embedded image is the BCPMcustom Notebook Graphic and is not used for .pptx
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+||  !!!   SUGGESTED INTERMEDIATE OBJECT:   !!!  ||
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+class SlideSpec:
+
+    title: str
+
+    bullets: list[str]
+
+    images: list[str]
+
+    tables: list[str]
+
+    callouts: list[str]
+
+
+~~~~~~~~~~~~~
+{([Example])}
+~~~~~~~~~~~~~
+
+
+SlideSpec(
+    title="Look into Warehouse Shipping Efficiency",
+
+    bullets=[
+        "Check amount of time required to ship orders",
+        "Look for shipping delays",
+        "Determine if delays are systemic"
+    ],
+
+    images=[
+        "output_42_0.png",
+        "output_44_0.png"
+    ],
+
+    callouts=[
+        "Orders shipped from multiple warehouses..."
+    ]
+)
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+||  !!!   Notebook Authoring Grammar   !!!  ||
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+#      Presentation Title
+##     New Slide
+###    Ignore
+####   Sub-slide / Callout
+-      PowerPoint Bullet
+<table> DataFrame
+![ ]   Figure
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+|| !!!   CONVERSION PROGRAM STRUCTURE   !!!  ||
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ 
+repo/
+
+├── parser/
+│   └── markdown_parser.py
+
+├── models/
+│   └── presentation_spec.py
+
+├── renderers/
+│   └── pptx_renderer.py
+
+├── templates/
+│   └── BCPMcustom_Template.pptx
+
+├── assets/
+│   └── logo.png
+
+└── notebook2pptx.py
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+|| !!!   notebook2pptx (executable) goals   !!! ||
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+- custom template support
+- markdown rules
+- dataframe rendering
+- image extraction
+- continuation slides
+- automatic title/closing slides
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+||  !!!   DEFINE SLIDE TYPES FOR .pptx RENDERER   !!!  ||
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[Create a class structure for the renderer to call from]
+
+
+Title Slide        \            class SlideType(Enum):
+Content Slide    ---\                   TITLE = 1
+Sub-Slide        ---/                   CONTENT = 2
+Closing            /                    CALLOUT = 3
+                                        CLOSING = 4
