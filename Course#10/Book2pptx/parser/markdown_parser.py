@@ -62,10 +62,26 @@ class MarkdownParser:
 
         with open(filename, encoding="utf-8") as f:
 
+            in_table = False
+            table_lines = []
+
             for line in f:
                 line = line.strip()
                 if not line:
                     continue
+                
+                if in_table:
+                    table_lines.append(line)
+                    if "</table>" in line:
+                        html_table = "\n".join(table_lines)
+                        table_lines = []
+                        in_table = False
+                    continue
+                if "<table" in line:
+                    in_table = True
+                    table_lines = [line]
+                    continue
+
                 self.parse_heading(line)
                 self.parse_bullet(line)
                 self.parse_image(line)
@@ -113,3 +129,4 @@ for slide in presentation.slides:
 
     for callout in slide.callouts:
         print(f"  - {callout}")
+

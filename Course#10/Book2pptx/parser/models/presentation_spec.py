@@ -8,6 +8,7 @@ class SlideSpec:
     title: str
     bullets: list[str] = field(default_factory=list)
     images: list[str] = field(default_factory=list)
+    tables: list[str] = field(default_factory=list)
     callouts: list[str] = field(default_factory=list)
 
 
