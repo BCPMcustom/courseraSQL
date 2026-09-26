@@ -2,6 +2,83 @@
 
 import re
 from models.presentation_spec import (SlideSpec, PresentationSpec)
+from html.parser import HTMLParser
+import matplotlib.pyplot as plt
+
+class TableParser(HTMLParser):
+
+    def __init__(self):
+        super().__init__()
+        self.rows = []
+        self.current_row = []
+        self.current_cell = ""
+        self.in_cell = False
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("th", "td"):
+            self.in_cell = True
+            self.current_cell = ""
+        elif tag == "tr":
+            self.current_row = []
+
+    def handle_data(self, data):
+        if self.in_cell:
+            self.current_cell += data
+
+    def handle_endtag(self, tag):
+
+        if tag in ("th", "td"):
+            self.current_row.append(
+                self.current_cell.strip()
+            )
+            self.in_cell = False
+
+        elif tag == "tr":
+            if self.current_row:
+                self.rows.append(
+                    self.current_row
+                )
+
+class HTMLTableRenderer:
+
+    def __init__(self):
+        self.table_count = 0
+
+    def render(self, html_table):
+
+        parser = TableParser()
+        parser.feed(html_table)
+        rows = parser.rows
+
+        filename = (
+            f"table_{self.table_count}.png"
+        )
+
+        self.table_count += 1
+
+        fig, ax = plt.subplots()
+
+        ax.axis("off")
+
+        table = ax.table(
+            cellText=rows,
+            loc="center"
+        )
+
+        table.auto_set_font_size(False)
+        table.set_fontsize(8)
+
+        table.scale(1, 1.5)
+
+        plt.savefig(
+            filename,
+            bbox_inches="tight",
+            dpi=200
+        )
+
+        plt.close(fig)
+
+        return filename
 
 class MarkdownParser:
 
@@ -9,6 +86,8 @@ class MarkdownParser:
         self.presentation_title = ""
         self.slides = []
         self.current_slide = None
+        self.closing_title = ""
+        self.table_renderer = HTMLTableRenderer()
 
 
     def parse_heading(self, line):
@@ -69,19 +148,25 @@ class MarkdownParser:
                 line = line.strip()
                 if not line:
                     continue
-                
-                if in_table:
-                    table_lines.append(line)
-                    if "</table>" in line:
-                        html_table = "\n".join(table_lines)
-                        table_lines = []
-                        in_table = False
-                    continue
-                if "<table" in line:
+
+                if "<table" in line:                   
                     in_table = True
                     table_lines = [line]
                     continue
+                
+                if in_table:
+                    table_lines.append(line)
+                    
+                    if "</table>" in line:                        
+                        html_table = "\n".join(table_lines)
+                        image_filename = (self.table_renderer.render(html_table))
 
+                        image_line = (f"![table]({image_filename})")
+                        self.parse_image(image_line)
+                        table_lines = []
+                        in_table = False
+                        continue
+                
                 self.parse_heading(line)
                 self.parse_bullet(line)
                 self.parse_image(line)
