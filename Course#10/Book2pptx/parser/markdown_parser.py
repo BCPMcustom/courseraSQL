@@ -1,7 +1,7 @@
 # parser/markdown_parser.py
 
 import re, os
-from models.presentation_spec import (SlideSpec, PresentationSpec)
+from parser.models.presentation_spec import (SlideSpec, PresentationSpec)
 from html.parser import HTMLParser
 import matplotlib.pyplot as plt
 
