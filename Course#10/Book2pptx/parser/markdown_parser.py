@@ -1,6 +1,6 @@
 # parser/markdown_parser.py
 
-import re
+import re, os
 from models.presentation_spec import (SlideSpec, PresentationSpec)
 from html.parser import HTMLParser
 import matplotlib.pyplot as plt
@@ -28,9 +28,7 @@ class TableParser(HTMLParser):
     def handle_endtag(self, tag):
 
         if tag in ("th", "td"):
-            self.current_row.append(
-                self.current_cell.strip()
-            )
+            self.current_row.append(self.current_cell.strip())
             self.in_cell = False
 
         elif tag == "tr":
@@ -46,22 +44,56 @@ class HTMLTableRenderer:
 
     def render(self, html_table):
 
+        HEADER_LIMIT = 20
+        CELL_LIMIT = 40
+        column_widths = []
+        display_rows = []
         parser = TableParser()
         parser.feed(html_table)
         rows = parser.rows
 
-        filename = (
-            f"table_{self.table_count}.png"
-        )
-
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        assets_dir = os.path.join(current_dir, "..", "assets")
+        filename = (f"table_{self.table_count}.png")
+        output_path = os.path.normpath(os.path.join(assets_dir, filename))
         self.table_count += 1
+
+        # Determine the number of columns
+        num_columns = max(len(row) for row in rows)
+
+        # Find the longest cell in each column
+
+        for row_number, row in enumerate(rows):
+            limit = HEADER_LIMIT if row_number == 0 else CELL_LIMIT
+            display_row = []
+
+            for cell in row:
+                if len(cell) > limit:
+                    cell = cell[:limit - 3] + "..."
+                display_row.append(cell)
+            display_rows.append(display_row)
+
+        for column in range(num_columns):
+            longest = max(len(row[column]) if column < len(row) else 0 for row in rows)
+            column_widths.append(longest)
+
+        num_columns = max(len(row) for row in display_rows)
+        column_widths = []
+
+        for column in range(num_columns):
+            longest = max(len(row[column]) if column < len(row) else 0 for row in display_rows)
+            column_widths.append(longest)
+        total_width = sum(column_widths)
+
+        column_widths = [width / total_width for width in column_widths]
 
         fig, ax = plt.subplots()
 
         ax.axis("off")
 
         table = ax.table(
-            cellText=rows,
+            cellText=display_rows,
+            colWidths=column_widths,
             loc="center"
         )
 
@@ -71,14 +103,14 @@ class HTMLTableRenderer:
         table.scale(1, 1.5)
 
         plt.savefig(
-            filename,
+            output_path,
             bbox_inches="tight",
             dpi=200
         )
 
         plt.close(fig)
 
-        return filename
+        return output_path
 
 class MarkdownParser:
 
@@ -106,6 +138,11 @@ class MarkdownParser:
             print(f"NEW SLIDE: {title}")
             self.current_slide = SlideSpec(title)
             self.slides.append(self.current_slide)
+
+    def parse_ignore(self, line, in_ignore):
+        if line.startswith("### "):
+            return True
+        return in_ignore
 
 
         
@@ -140,18 +177,34 @@ class MarkdownParser:
     def parse(self, filename):
 
         with open(filename, encoding="utf-8") as f:
-
-            in_table = False
+            
+            lines = f.readlines()
+            
             table_lines = []
+            in_ignore = False
+            in_table = False
+            
+            i = 0
 
-            for line in f:
-                line = line.strip()
+            while i < len(lines):
+
+                line = lines[i].strip()
+                
                 if not line:
+                    i += 1
                     continue
+
+                if in_ignore:
+                    if line.startswith("## ") or line.startswith("#### "):
+                        in_ignore = False
+                    else:
+                        i += 1
+                        continue
 
                 if "<table" in line:                   
                     in_table = True
                     table_lines = [line]
+                    i += 1
                     continue
                 
                 if in_table:
@@ -160,17 +213,20 @@ class MarkdownParser:
                     if "</table>" in line:                        
                         html_table = "\n".join(table_lines)
                         image_filename = (self.table_renderer.render(html_table))
-
                         image_line = (f"![table]({image_filename})")
                         self.parse_image(image_line)
                         table_lines = []
                         in_table = False
+                        i += 1
                         continue
-                
+                               
                 self.parse_heading(line)
                 self.parse_bullet(line)
                 self.parse_image(line)
                 self.parse_callouts(line)
+
+                i += 1
+                in_ignore = self.parse_ignore(line, in_ignore)
 
         return PresentationSpec(
             title=self.presentation_title,
@@ -181,37 +237,43 @@ class MarkdownParser:
 
 ###  Debug Section
 
-parser = MarkdownParser()
-
-presentation = parser.parse(
-    "MintClassics.md"
-)
 
 
-print("\nPresentation Title:")
-print(presentation.title)
+#inputFile = "MintClassics.md"
+#BASE_DIR = os.path.dirname(os.path.abspath(__file__))    
+#filePath = os.path.join(BASE_DIR, inputFile)
+    
+#parser = MarkdownParser()
+#presentation = parser.parse(filePath)
 
-print()
-print("Closing Slide:")
-print(presentation.closing_title)
 
-for slide in presentation.slides:
 
-    print()
-    print(slide.title)
 
-    print("Bullets:")
+#print("\nPresentation Title:")
 
-    for bullet in slide.bullets:
-        print(f"  - {bullet}")
+#print(presentation.title)
 
-    print("Images:")
+#print()
+#print("Closing Slide:")
+#print(presentation.closing_title)
 
-    for image in slide.images:
-        print(f"  - {image}")
+#for slide in presentation.slides:
 
-    print("Callouts:")
+#    print()
+#    print(slide.title)
 
-    for callout in slide.callouts:
-        print(f"  - {callout}")
+#    print("Bullets:")
+
+#    for bullet in slide.bullets:
+#        print(f"  - {bullet}")
+
+#    print("Images:")
+
+#    for image in slide.images:
+#        print(f"  - {image}")
+
+#    print("Callouts:")
+
+#    for callout in slide.callouts:
+#        print(f"  - {callout}")
 
