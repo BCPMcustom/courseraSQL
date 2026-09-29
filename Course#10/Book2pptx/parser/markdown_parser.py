@@ -4,17 +4,22 @@ import re, os
 from parser.models.presentation_spec import (SlideSpec, PresentationSpec)
 from html.parser import HTMLParser
 import matplotlib.pyplot as plt
+#from blume import table
 
 class TableParser(HTMLParser):
 
     def __init__(self):
         super().__init__()
+        self.headers = []
         self.rows = []
         self.current_row = []
         self.current_cell = ""
         self.in_cell = False
+        self.in_header = False
+
 
     def handle_starttag(self, tag, attrs):
+        
         if tag in ("th", "td"):
             self.in_cell = True
             self.current_cell = ""
@@ -26,16 +31,16 @@ class TableParser(HTMLParser):
             self.current_cell += data
 
     def handle_endtag(self, tag):
-
         if tag in ("th", "td"):
             self.current_row.append(self.current_cell.strip())
             self.in_cell = False
-
         elif tag == "tr":
             if self.current_row:
-                self.rows.append(
-                    self.current_row
-                )
+                if self.in_header:
+                    self.headers.append(self.current_row)
+                else:
+                    self.rows.append(self.current_row)
+
 
 class HTMLTableRenderer:
 
@@ -46,11 +51,17 @@ class HTMLTableRenderer:
 
         HEADER_LIMIT = 20
         CELL_LIMIT = 40
+        total_width = 0
         column_widths = []
         display_rows = []
         parser = TableParser()
         parser.feed(html_table)
         rows = parser.rows
+
+#        print("\n--- TABLE PARSER TEST ---")
+#        for i, row in enumerate(rows):
+#            print(f"ROW {i}: {row}")
+#        print("--- END TEST ---\n")
 
         current_dir = os.path.dirname(os.path.abspath(__file__))
         assets_dir = os.path.join(current_dir, "..", "assets")
@@ -73,34 +84,39 @@ class HTMLTableRenderer:
                 display_row.append(cell)
             display_rows.append(display_row)
 
-        for column in range(num_columns):
-            longest = max(len(row[column]) if column < len(row) else 0 for row in rows)
-            column_widths.append(longest)
 
-        num_columns = max(len(row) for row in display_rows)
-        column_widths = []
+
+        header = rows[0]
+        data = rows[1:]
+
 
         for column in range(num_columns):
+            header_length = len(header[column])
+            data_length = max(len(row[column]) for row in data)      
             longest = max(len(row[column]) if column < len(row) else 0 for row in display_rows)
             column_widths.append(longest)
-        total_width = sum(column_widths)
+            if header_length > data_length:
+                total_width -= (header_length/data_length)   
 
+        total_width += sum(column_widths)
         column_widths = [width / total_width for width in column_widths]
+
 
         fig, ax = plt.subplots()
 
         ax.axis("off")
 
         table = ax.table(
-            cellText=display_rows,
-            colWidths=column_widths,
-            loc="center"
+            cellText=rows[1:],
+            colLabels=rows[0],
+            loc="center",
+            colWidths=column_widths
         )
 
         table.auto_set_font_size(False)
         table.set_fontsize(8)
 
-        table.scale(1, 1.5)
+        table.scale(1, 1.2)
 
         plt.savefig(
             output_path,
@@ -120,6 +136,7 @@ class MarkdownParser:
         self.current_slide = None
         self.closing_title = ""
         self.table_renderer = HTMLTableRenderer()
+        self.base_dir = ""
 
 
     def parse_heading(self, line):
@@ -160,10 +177,10 @@ class MarkdownParser:
 
         match = re.search(IMAGE_RE, line)
 
-        if (match and self.current_slide is not None):
-            if match:
-                filename = match.group(2)
-                self.current_slide.images.append(filename)
+        if match and self.current_slide is not None:
+            filename = match.group(2)
+            full_path = os.path.abspath(os.path.join(self.base_dir, filename))
+            self.current_slide.images.append(full_path)
 
 
     def parse_callouts(self, line):
@@ -175,6 +192,8 @@ class MarkdownParser:
 
         
     def parse(self, filename):
+
+        self.base_dir = os.path.dirname(filename)
 
         with open(filename, encoding="utf-8") as f:
             
