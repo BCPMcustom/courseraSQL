@@ -59,6 +59,7 @@ def main():
     
     input_path = searchResult
     print(f"Zip extraction complete. Found target markdown: {input_path}")
+    print(f"Processing {input_path} through markdown_parser...")
     
     try:
         # 4. Instantiate your parser and pass the user's terminal variable into it
@@ -76,10 +77,7 @@ def main():
         sys.exit(1)
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
-        sys.exit(1)
-
-    print(f"Processing {input_path} through markdown_parser...")
-    
+        sys.exit(1)    
 
     print("Cleaning /assets/ folder...")
 
@@ -93,7 +91,7 @@ def main():
         except Exception as e:
             print(f"Failed to delete {file_path}. Reason: {e}")
 
-    print("Finished processing.")
+    print("SUCCESS!!!")
 
 if __name__ == "__main__":
     main()
