@@ -4,6 +4,7 @@ import zipfile
 import glob
 from parser.markdown_parser import (TableParser, HTMLTableRenderer, MarkdownParser)
 from renderer.pptx_renderer import PowerPointRenderer
+from pathlib import Path
 
 def main():
     # sys.argv[0] is always the script name ('book2pptx.py')
@@ -63,23 +64,35 @@ def main():
         # 4. Instantiate your parser and pass the user's terminal variable into it
         parser = MarkdownParser()
         presentation = parser.parse(input_path)
+        renderer = PowerPointRenderer()
+        finalPPTX = renderer.render(presentation)
+        new_filename = str(Path(zip_file_input).with_suffix('.pptx'))
+        finalPPTX.save(new_filename)
         
         print("Finished processing successfully!")
-
-        # NOTE FOR LATER: This is where you will add your /assets/ wipe code
-        renderer = PowerPointRenderer()
-        renderer.render(presentation)
-        # and save the final .pptx to the root folder.
 
     except FileNotFoundError as e:
         print(f"Error: {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"An unexpected error occurred during parsing: {e}")
+        print(f"An unexpected error occurred: {e}")
         sys.exit(1)
 
     print(f"Processing {input_path} through markdown_parser...")
     
+
+    print("Cleaning /assets/ folder...")
+
+    for filename in os.listdir(ASSETS_DIR):
+        file_path = os.path.join(ASSETS_DIR, filename)
+    
+        try:
+            # Check if it is a file and delete it
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            print(f"Failed to delete {file_path}. Reason: {e}")
+
     print("Finished processing.")
 
 if __name__ == "__main__":

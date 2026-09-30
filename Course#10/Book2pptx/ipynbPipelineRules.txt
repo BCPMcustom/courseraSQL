@@ -47,30 +47,6 @@ class SlideSpec:
     callouts: list[str]
 
 
-~~~~~~~~~~~~~
-{([Example])}
-~~~~~~~~~~~~~
-
-
-SlideSpec(
-    title="Look into Warehouse Shipping Efficiency",
-
-    bullets=[
-        "Check amount of time required to ship orders",
-        "Look for shipping delays",
-        "Determine if delays are systemic"
-    ],
-
-    images=[
-        "output_42_0.png",
-        "output_44_0.png"
-    ],
-
-    callouts=[
-        "Orders shipped from multiple warehouses..."
-    ]
-)
-
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ||  !!!   Notebook Authoring Grammar   !!!  ||
@@ -95,20 +71,22 @@ repo/
 
 ├── parser/
 │   └── markdown_parser.py
-
-├── models/
-│   └── presentation_spec.py
-
+|   │
+|   └── models/
+│       └── presentation_spec.py
+|
 ├── renderers/
 │   └── pptx_renderer.py
-
-├── templates/
-│   └── BCPMcustom_Template.pptx
-
+|   |
+|   └── templates/
+│       └── Template.pptx
+|
 ├── assets/
 │   └── logo.png
-
-└── notebook2pptx.py
+|
+├── notebook2pptx.py
+|
+└── [notebookExport].zip
 
 
 

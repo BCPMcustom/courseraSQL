@@ -1,4 +1,3 @@
-# parser/markdown_parser.py
 
 import re, os
 from parser.models.presentation_spec import (SlideSpec, PresentationSpec)
@@ -57,11 +56,6 @@ class HTMLTableRenderer:
         parser = TableParser()
         parser.feed(html_table)
         rows = parser.rows
-
-#        print("\n--- TABLE PARSER TEST ---")
-#        for i, row in enumerate(rows):
-#            print(f"ROW {i}: {row}")
-#        print("--- END TEST ---\n")
 
         current_dir = os.path.dirname(os.path.abspath(__file__))
         assets_dir = os.path.join(current_dir, "..", "assets")
@@ -257,46 +251,4 @@ class MarkdownParser:
             closing_title=self.closing_title
         )
 
-
-###  Debug Section
-
-
-
-#inputFile = "MintClassics.md"
-#BASE_DIR = os.path.dirname(os.path.abspath(__file__))    
-#filePath = os.path.join(BASE_DIR, inputFile)
-    
-#parser = MarkdownParser()
-#presentation = parser.parse(filePath)
-
-
-
-
-#print("\nPresentation Title:")
-
-#print(presentation.title)
-
-#print()
-#print("Closing Slide:")
-#print(presentation.closing_title)
-
-#for slide in presentation.slides:
-
-#    print()
-#    print(slide.title)
-
-#    print("Bullets:")
-
-#    for bullet in slide.bullets:
-#        print(f"  - {bullet}")
-
-#    print("Images:")
-
-#    for image in slide.images:
-#        print(f"  - {image}")
-
-#    print("Callouts:")
-
-#    for callout in slide.callouts:
-#        print(f"  - {callout}")
 
