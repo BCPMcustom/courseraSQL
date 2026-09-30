@@ -85,16 +85,20 @@ class HTMLTableRenderer:
             display_rows.append(display_row)
 
 
-
         header = rows[0]
         data = rows[1:]
-
 
         for column in range(num_columns):
             header_length = len(header[column])
             data_length = max(len(row[column]) for row in data)      
             longest = max(len(row[column]) if column < len(row) else 0 for row in display_rows)
             column_widths.append(longest)
+            
+            # Matplotlib's table() does not properly account for header width
+            # when calculating the rendered table geometry. When a header is
+            # wider than the data in that column, reduce total_width to
+            # compensate for Matplotlib's behavior.
+            
             if header_length > data_length:
                 total_width -= (header_length/data_length)   
 
@@ -214,7 +218,7 @@ class MarkdownParser:
                     continue
 
                 if in_ignore:
-                    if line.startswith("## ") or line.startswith("#### "):
+                    if line.startswith("# ") or line.startswith("## ") or line.startswith("#### "):
                         in_ignore = False
                     else:
                         i += 1

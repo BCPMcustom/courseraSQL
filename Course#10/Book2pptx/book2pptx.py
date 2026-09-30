@@ -3,7 +3,7 @@ import os
 import zipfile
 import glob
 from parser.markdown_parser import (TableParser, HTMLTableRenderer, MarkdownParser)
-#from renderer.pptx_renderer import PowerPointRenderer
+from renderer.pptx_renderer import PowerPointRenderer
 
 def main():
     # sys.argv[0] is always the script name ('book2pptx.py')
@@ -67,8 +67,8 @@ def main():
         print("Finished processing successfully!")
 
         # NOTE FOR LATER: This is where you will add your /assets/ wipe code
-        #renderer = PowerPointRenderer()
-        #renderer.render(presentation)
+        renderer = PowerPointRenderer()
+        renderer.render(presentation)
         # and save the final .pptx to the root folder.
 
     except FileNotFoundError as e:
