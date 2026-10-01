@@ -1,7 +1,0 @@
-book2pptx.py
-parser/markdown_parser.py
-parser/models/presentation_spec.py
-renderer/pptx_renderer.py
-
-codecat.sh
-codecatlist.txt
