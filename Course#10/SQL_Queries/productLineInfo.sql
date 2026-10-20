@@ -1,4 +1,3 @@
-
 WITH 
 	
     productLinesInfo AS (
@@ -16,19 +15,35 @@ FROM mintclassics.products p
 	revenueInfo AS (
 SELECT
         od.productCode,
-        od.priceEach,
-		SUM(od.quantityOrdered) AS quantitySold,
-        SUM(od.priceEach) AS lineRevenue 
+        od.priceEach AS salePrice,
+        od.orderNumber,
+        od.quantityOrdered AS quantitySold,
+		(od.quantityOrdered * od.priceEach) AS lineRevenue
+
 FROM mintclassics.orderdetails od
-GROUP BY od.productCode, priceEach
+GROUP BY od.productCode, od.orderNumber, od.priceEach
 )
 
 SELECT
-	pli.*,
-    ri.priceEach,
-    ri.quantitySold,
-    ri.lineRevenue,
-    ri.quantitySold * ri.lineRevenue AS grossRevenue
+	pli.productCode,
+    pli.productLine,
+    pli.productVendor,
+    pli.buyPrice,
+    pli.warehouseCode,
+    pli.quantityInStock,
+    pli.investmentValue,
+    SUM(ri.quantitySold * ri.lineRevenue) AS grossRevenue
+
 FROM productLinesInfo pli
 JOIN revenueInfo ri ON pli.productCode = ri.productCode
+
+GROUP BY
+	pli.productCode,
+    pli.productLine,
+    pli.productVendor,
+    pli.buyPrice,
+    pli.warehouseCode,
+    pli.quantityInStock,
+    pli.investmentValue
+
 ;
