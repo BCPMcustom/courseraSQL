@@ -1,49 +1,44 @@
-WITH 
-	
-    productLinesInfo AS (
+WITH orderInfo AS (
+
+	SELECT
+    productCode,
+	quantityOrdered,
+	priceEach,
+	(quantityOrdered * priceEach) AS lineRevenue
+
+	FROM mintclassics.orderdetails
+    ),
+    
+    productInfo AS (
+    
+	SELECT 
+	productCode,
+	warehouseCode,
+	productName,
+	productLine,
+	productVendor,
+	buyPrice,
+	quantityInStock
+	FROM mintclassics.products
+    )
+    
 SELECT 
-        p.warehouseCode,
-        p.productCode,
-        p.productLine,
-        p.productVendor,
-        p.buyPrice,
-        p.quantityInStock,
-        p.buyPrice * p.quantityInStock AS investmentValue
-FROM mintclassics.products p
-),
-
-	revenueInfo AS (
-SELECT
-        od.productCode,
-        od.priceEach AS salePrice,
-        od.orderNumber,
-        od.quantityOrdered AS quantitySold,
-		(od.quantityOrdered * od.priceEach) AS lineRevenue
-
-FROM mintclassics.orderdetails od
-GROUP BY od.productCode, od.orderNumber, od.priceEach
-)
-
-SELECT
-	pli.productCode,
-    pli.productLine,
-    pli.productVendor,
-    pli.buyPrice,
-    pli.warehouseCode,
-    pli.quantityInStock,
-    pli.investmentValue,
-    SUM(ri.quantitySold * ri.lineRevenue) AS grossRevenue
-
-FROM productLinesInfo pli
-JOIN revenueInfo ri ON pli.productCode = ri.productCode
-
+	pi.productCode,
+    pi.warehouseCode,
+    pi.productName,
+    pi.productLine,
+    pi.productVendor,
+    pi.quantityInStock,
+    (pi.buyPrice * pi.quantityInStock) AS investmentValue,
+    SUM(oi.lineRevenue) AS grossRevenue
+FROM productInfo pi
+LEFT JOIN orderInfo oi ON pi.productCode = oi.productCode
 GROUP BY
-	pli.productCode,
-    pli.productLine,
-    pli.productVendor,
-    pli.buyPrice,
-    pli.warehouseCode,
-    pli.quantityInStock,
-    pli.investmentValue
-
+	pi.productCode,
+	pi.warehouseCode,
+    pi.productName,
+    pi.productLine,
+    pi.productVendor,
+    pi.buyPrice,
+    pi.quantityInStock
 ;
